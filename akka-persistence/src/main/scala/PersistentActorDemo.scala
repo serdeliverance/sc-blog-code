@@ -1,4 +1,4 @@
-import PersistentActorDemo.GeekCoinActor.{QuoteUpdated, UpdateQuote}
+import PersistentActorDemo.GeekCoinActor.{QuoteUpdated, UpdateQuote, calculateNewQuote}
 import akka.actor.{ActorLogging, ActorSystem, Props}
 import akka.persistence.PersistentActor
 
@@ -9,6 +9,8 @@ object PersistentActorDemo extends App {
     case class UpdateQuote(quotePercentage: Double)
     // events
     case class QuoteUpdated(quotePercentage: Double)
+
+    def calculateNewQuote(quote: Double, quotePercentage: Double) = quote + quote * quotePercentage / 100
   }
 
   class GeekCoinActor extends PersistentActor with ActorLogging {
@@ -24,15 +26,15 @@ object PersistentActorDemo extends App {
         persist(QuoteUpdated(quotePercentage)) { event =>
           log.info(s"Event persisted: $event")
           // ...we update the state
-          quote = quote + quote * quotePercentage
-          log.info(s"State updated. New state -> quote: $quote")
+          quote = calculateNewQuote(quote, quotePercentage)
+          log.info(f"State updated. New state -> quote: $quote%1.2f")
         }
     }
 
     override def receiveRecover: Receive = {
       case event @ QuoteUpdated(quotePercentage) =>
-        log.info(s"Recovered event: $event")
-        quote = quote + quote * quotePercentage
+        quote = calculateNewQuote(quote, quotePercentage)
+        log.info(f"Recovered event: $event. State -> quote: $quote%1.2f")
     }
   }
 
@@ -40,7 +42,7 @@ object PersistentActorDemo extends App {
   val system = ActorSystem("PersistentActorDemo")
   val geekCoinActor = system.actorOf(Props[GeekCoinActor], "geekCoinActor")
 
-  // sending commands to our actor
+// sending commands to our actor
   geekCoinActor ! UpdateQuote(50.0)
   geekCoinActor ! UpdateQuote(-15.0)
   geekCoinActor ! UpdateQuote(200.0)
