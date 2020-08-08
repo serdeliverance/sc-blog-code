@@ -1,7 +1,9 @@
+import CirceOpticDemo.JsonManipulationAPI.{setHotelType, setLocationAddress, setLocationZipCode, setName, setStars}
 import io.circe.Json
 import io.circe.parser._
-
 import io.circe.optics.JsonPath._
+
+import scala.annotation.tailrec
 
 /*
   A demo for composing changes when parsing json with circe and optics
@@ -28,36 +30,83 @@ object CirceOpticDemo extends App {
 
   val json = parse(jsonStr)
 
-  val result: String = json.map(enabled(true).andThen(_.toString()))
+  val result: String = json.map(isEnabled(true).andThen(_.toString()))
     .fold(_ => "invalid json", r => r)
 
   // way 1: chaining operations
-
   val result1: String = json.map(
-    name("The Lost Wonder")
-      .andThen(hotelType("Premium"))
-      .andThen(stars(5))
-      .andThen(locationAddress("Fake Street 123"))
-      .andThen(locationZipCode("1212-003"))
+    setName("The Lost Wonder")
+      .andThen(setHotelType("Premium"))
+      .andThen(setStars(5))
+      .andThen(setLocationAddress("Fake Street 123"))
+      .andThen(setLocationZipCode("1212-003"))
       .andThen(_.toString())
   ).fold(_ => "invalid json", r => r)
 
   println(result)
 
+  // way 2: using a method
+  val result2: String = json.map(update(
+    name = "The Lost Wonder",
+    hotelType = "Premium",
+    stars = 5,
+    address = "Fake Street 123",
+    zipCode = "1212-003"
+  ).andThen(_.toString()))
+    .fold(_ => "invalid json", r => r)
+
   object JsonManipulationAPI {
 
-    // some transformations
-    def name(name: String): Json => Json = root.name.string.set(name)
+    type JsonAction = Json => Json
 
-    def hotelType(hotelType: String): Json => Json = root.hotel_type.string.set(hotelType)
+    // transformation pipeline
+    def update(name: String,
+               hotelType: String,
+               stars: Int,
+               address: String,
+               zipCode: String): JsonAction =
+      setName(name)
+        .andThen(setHotelType(hotelType))
+        .andThen(setStars(stars))
+        .andThen(setLocationAddress(address))
+        .andThen(setLocationZipCode(zipCode))
 
-    def stars(stars: Int): Json => Json = root.stars.int.set(stars)
+    def updateFold(name: String,
+                   hotelType: String,
+                   stars: Int,
+                   address: String,
+                   zipCode: String): JsonAction =
+      fold(_)(List(
+        setName(name),
+        setHotelType(hotelType),
+        setStars(stars),
+        setLocationAddress(address),
+        setLocationZipCode(zipCode)
+      ))
 
-    def enabled(active: Boolean): Json => Json = root.active.boolean.set(active)
+    def fold(initial: Json)(transformations: List[JsonAction]): Json = {
 
-    def locationAddress(address: String): Json => Json = root.location.address.string.set(address)
+      @tailrec
+      def go(json: Json, tranformations: List[JsonAction]): Json = {
+        if (tranformations.isEmpty) json
+        else go(tranformations.head(json), tranformations.tail)
+      }
 
-    def locationZipCode(zipCode: String): Json => Json = root.location.zipcode.string.set(zipCode)
+      go(initial, transformations)
+    }
+
+    // transformations
+    def setName(name: String): JsonAction = root.name.string.set(name)
+
+    def setHotelType(hotelType: String): JsonAction = root.hotel_type.string.set(hotelType)
+
+    def setStars(stars: Int): JsonAction = root.stars.int.set(stars)
+
+    def isEnabled(active: Boolean): JsonAction = root.active.boolean.set(active)
+
+    def setLocationAddress(address: String): JsonAction = root.location.address.string.set(address)
+
+    def setLocationZipCode(zipCode: String): JsonAction = root.location.zipcode.string.set(zipCode)
   }
 
 }
