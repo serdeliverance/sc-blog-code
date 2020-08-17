@@ -18,6 +18,7 @@ object CirceOpticDemo extends App {
       "name": "Voyage Dream",
       "hotel_type": "premium",
       "stars": 5,
+      "likes": 1000,
       "location": {
         "address": "500 East A Street South",
         "zipcode": "69153-3111"
@@ -150,6 +151,15 @@ object CirceOpticDemo extends App {
     def setLocationAddress(address: String): JsonAction = root.location.address.string.set(address)
 
     def setLocationZipCode(zipCode: String): JsonAction = root.location.zipcode.string.set(zipCode)
+
+    def setLikes(likes: Int): JsonAction = root.likes.int.set(likes)
+
+    def updateNameStarsAndLikes(name: String, stars: Int, likes: Int): JsonAction =
+      fold(_)(List(
+        setName(name),
+        setStars(stars),
+        setLikes(likes)
+      ))
   }
 
 }
