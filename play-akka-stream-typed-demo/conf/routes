@@ -1,0 +1,3 @@
+GET     /healthCheck                           controllers.HealthCheckController.healthCheck()
+
+POST    /batch                                 controllers.BatchController.batch()
