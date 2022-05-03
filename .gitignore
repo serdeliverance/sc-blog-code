@@ -13,3 +13,8 @@ project/plugins/project/
 .idea
 *.iml
 atlassian-ide-plugin.xml
+
+.bloop/
+.vscode/
+.metals/
+metals.sbt
