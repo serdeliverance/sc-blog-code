@@ -1,5 +1,6 @@
 import java.time.OffsetDateTime
 import cats.data.Validated
+import AccountValidator.ValidationResult
 
 case class Account(
     name: String,
@@ -13,5 +14,5 @@ case class Account(
 object Account:
 
   extension (account: Account)
-    def toValidated[ValidationResult[Account]] =
+    def toValidated: ValidationResult[Account] =
       AccountValidator.validate(account)
