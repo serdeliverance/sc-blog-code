@@ -8,20 +8,18 @@ import cats.implicits._
 
 object AccountValidator:
 
-  type ValidationResult[T] = Validated[NonEmptyList[AccountValidation], T]
+  type ValidationResult[T] = Validated[NonEmptyChain[AccountValidation], T]
 
   def validate(account: Account): ValidationResult[Account] = ???
 
-  private def validateName(name: String): Validated[String, String] =
-    Either.cond(name.nonEmpty, name, "name must not be empty").toValidated
+  private def validateName(name: String): ValidationResult[String] =
+    if name.nonEmpty then name.validNec else NameIsEmpty.invalidNec
 
-  private def validateUserId(userId: Long): Validated[String, Long] =
-    Either.cond(userId > 0, userId, "userId must be positive").toValidated
+  private def validateUserId(userId: Long): ValidationResult[Long] =
+    if userId > 0 then userId.validNec else UserIsInvalid.invalidNec
 
-  private def validateInitialAmount(initialAmount: BigDecimal): Validated[String, BigDecimal] =
-    Either.cond(initialAmount > 0, initialAmount, "initial amount must be positive").toValidated
+  private def validateInitialAmount(initialAmount: BigDecimal): ValidationResult[BigDecimal] =
+    if initialAmount > 0 then initialAmount.validNec else InitialAmountNotPositive.invalidNec
 
-  private def validateCreatedAt(createdAt: OffsetDateTime): Validated[String, OffsetDateTime] =
-    Either
-      .cond(createdAt.isBefore(OffsetDateTime.now), createdAt, "creation date could not be in the future")
-      .toValidated
+  private def validateCreatedAt(createdAt: OffsetDateTime): ValidationResult[OffsetDateTime] =
+    if createdAt.isBefore(OffsetDateTime.now) then createdAt.validNec else CreationDateInvalid.invalidNec
