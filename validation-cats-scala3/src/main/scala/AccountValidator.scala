@@ -8,18 +8,27 @@ import cats.implicits._
 
 object AccountValidator:
 
-  type ValidationResult[T] = Validated[NonEmptyChain[AccountValidation], T]
+  type ValidationResult[T] = ValidatedNel[AccountValidation, T]
 
   def validate(account: Account): ValidationResult[Account] = ???
 
   private def validateName(name: String): ValidationResult[String] =
-    if name.nonEmpty then name.validNec else NameIsEmpty.invalidNec
+    if name.nonEmpty then name.validNel else NameIsEmpty.invalidNel
 
   private def validateUserId(userId: Long): ValidationResult[Long] =
-    if userId > 0 then userId.validNec else UserIsInvalid.invalidNec
+    if userId > 0 then userId.validNel else UserIsInvalid.invalidNel
 
   private def validateInitialAmount(initialAmount: BigDecimal): ValidationResult[BigDecimal] =
-    if initialAmount > 0 then initialAmount.validNec else InitialAmountNotPositive.invalidNec
+    if initialAmount > 0 then initialAmount.validNel else InitialAmountNotPositive.invalidNel
 
   private def validateCreatedAt(createdAt: OffsetDateTime): ValidationResult[OffsetDateTime] =
-    if createdAt.isBefore(OffsetDateTime.now) then createdAt.validNec else CreationDateInvalid.invalidNec
+    if createdAt.isBefore(OffsetDateTime.now) then createdAt.validNel else CreationDateInvalid.invalidNel
+
+  def validate(accountDTO: AccountDTO): ValidationResult[Account] =
+    (
+      validateName(accountDTO.name),
+      validateUserId(accountDTO.userId),
+      validateInitialAmount(accountDTO.initialAmount),
+      validateCreatedAt(accountDTO.createdAt)
+    )
+      .mapN((name, userId, initialAmount, createdAt) => Account(name, userId, initialAmount, createdAt))

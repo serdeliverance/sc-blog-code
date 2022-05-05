@@ -4,7 +4,6 @@ import AccountValidator.ValidationResult
 
 case class Account(
     name: String,
-    description: Option[String],
     userId: Long,
     initialAmount: BigDecimal,
     createdAt: OffsetDateTime,

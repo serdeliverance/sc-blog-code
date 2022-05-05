@@ -15,8 +15,6 @@ object EitherAccountValidator extends App:
 
   case class Account(name: String, userId: Long, initialAmount: BigDecimal, createdAt: OffsetDateTime)
 
-  case class AccountDTO(name: String, userId: Long, initialAmount: BigDecimal, createdAt: OffsetDateTime)
-
   def validate(dto: AccountDTO): Either[String, Account] =
     for
       name          <- validateName(dto.name)
