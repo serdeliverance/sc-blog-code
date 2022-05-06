@@ -1,3 +1,5 @@
+package io.github.sdev.example
+
 sealed trait AccountValidation:
   def errorMessage: String
 

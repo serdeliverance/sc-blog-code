@@ -1,3 +1,5 @@
+package io.github.sdev.example
+
 import cats.data.Validated
 import cats.data.NonEmptyList
 import java.time.OffsetDateTime
@@ -9,8 +11,6 @@ import cats.implicits._
 object AccountValidator:
 
   type ValidationResult[T] = ValidatedNel[AccountValidation, T]
-
-  def validate(account: Account): ValidationResult[Account] = ???
 
   private def validateName(name: String): ValidationResult[String] =
     if name.nonEmpty then name.validNel else NameIsEmpty.invalidNel
@@ -24,11 +24,11 @@ object AccountValidator:
   private def validateCreatedAt(createdAt: OffsetDateTime): ValidationResult[OffsetDateTime] =
     if createdAt.isBefore(OffsetDateTime.now) then createdAt.validNel else CreationDateInvalid.invalidNel
 
-  def validate(accountDTO: AccountDTO): ValidationResult[Account] =
+  def validate(account: Account): ValidationResult[Account] =
     (
-      validateName(accountDTO.name),
-      validateUserId(accountDTO.userId),
-      validateInitialAmount(accountDTO.initialAmount),
-      validateCreatedAt(accountDTO.createdAt)
+      validateName(account.name),
+      validateUserId(account.userId),
+      validateInitialAmount(account.initialAmount),
+      validateCreatedAt(account.createdAt)
     )
       .mapN((name, userId, initialAmount, createdAt) => Account(name, userId, initialAmount, createdAt))

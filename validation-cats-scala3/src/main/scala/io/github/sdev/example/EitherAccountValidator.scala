@@ -1,3 +1,5 @@
+package io.github.sdev.example
+
 import java.time.OffsetDateTime
 object EitherAccountValidator extends App:
 
@@ -15,22 +17,22 @@ object EitherAccountValidator extends App:
 
   case class Account(name: String, userId: Long, initialAmount: BigDecimal, createdAt: OffsetDateTime)
 
-  def validate(dto: AccountDTO): Either[String, Account] =
+  def validate(account: Account): Either[String, Account] =
     for
-      name          <- validateName(dto.name)
-      userId        <- validateUserId(dto.userId)
-      initialAmount <- validateInitialAmount(dto.initialAmount)
-      createdAt     <- validateCreatedAt(dto.createdAt)
+      name          <- validateName(account.name)
+      userId        <- validateUserId(account.userId)
+      initialAmount <- validateInitialAmount(account.initialAmount)
+      createdAt     <- validateCreatedAt(account.createdAt)
     yield Account(name, userId, initialAmount, createdAt)
 
   // first example - either short circuiting validations
-  val accountDTO = AccountDTO(
+  val account = Account(
     "pedro",                        // OK
     -20,                            // invalid userId
     -500,                           // negative initial amount
     OffsetDateTime.now.plusYears(2) // creation date is two years in the future!!!
   )
 
-  val result = validate(accountDTO)
+  val result = validate(account)
 
   println(result)

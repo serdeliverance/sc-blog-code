@@ -1,3 +1,5 @@
+package io.github.sdev.example
+
 import java.time.OffsetDateTime
 import cats.data.Validated
 import AccountValidator.ValidationResult
@@ -6,8 +8,7 @@ case class Account(
     name: String,
     userId: Long,
     initialAmount: BigDecimal,
-    createdAt: OffsetDateTime,
-    id: Option[Long] = None
+    createdAt: OffsetDateTime
 )
 
 object Account:
