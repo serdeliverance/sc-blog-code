@@ -13,4 +13,4 @@ case object InitialAmountNotPositive extends AccountValidation:
   override def errorMessage = "initial amount must be positive"
 
 case object CreationDateInvalid extends AccountValidation:
-  override def errorMessage = "creation date could not be greater than current time"
+  override def errorMessage = "creation date cannot be greater than current time"
